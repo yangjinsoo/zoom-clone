@@ -1,6 +1,6 @@
 const express = require("express");
-
-
+const http = require("http");
+const WebSocket = require("ws");
 
 const app = express();
 app.set('port', process.env.PORT || 3000);
@@ -10,6 +10,10 @@ app.use("/public", express.static(__dirname + "/public")); //브라우저에서 
 
 app.get("/", (req, res) => res.render("main"));
 
-app.listen(app.get('port'), () => {
+const server = http.createServer(app);
+
+const wss = new WebSocket.Server({ server });
+
+server.listen(app.get('port'), () => {
     console.log(`Listening on http://localhost:${app.get('port')}`);
 });
