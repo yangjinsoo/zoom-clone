@@ -9,22 +9,27 @@ html(lang="en")
         //- html기본요소들에 스타일입혀줌
         link(rel="stylesheet", href="https://unpkg.com/mvp.css")
     body
-        header 
+        header
             h1 Clone Coding 
         
-        main 
-            h2 Welcome to Clone Coding 
-
-            h3#nickname(display="none")
-
-            ul
-
-            form#nick-form
-                input(type="text", placeholder="nickname", require)
-                button 설정
-
-            form#msg-form
-                input(type="text", placeholder="write a message", require)
-                button 전송
+        main
+            div#welcome
+                form 
+                    strong 닉네임:
+                    input#nickname(type="text", placeholder="닉네임을 입력하세요", required)
+                    strong 방 이름:
+                    input#roomname(type="text", placeholder="방이름을 입력하세요", required)
+                    button(type="submit") Enter Room
             
-        script(src="/public/js/init.js") 
+            div#room(style="display:none")
+                h3
+
+                ul 
+ 
+                form
+                    input#msg(type="text", placeholder="메세지를 입력하세요", required)
+                    button 전송
+            
+
+        script(src="/socket.io/socket.io.js")
+        script(src="/public/js/init.js")

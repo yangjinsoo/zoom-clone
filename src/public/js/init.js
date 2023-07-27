@@ -1,49 +1,45 @@
-//서버측과 소켓 연결
-const socket = new WebSocket(`ws://${window.location.host}`);
-const msgList = document.querySelector("ul");
-const msgForm = document.querySelector("#msg-form");
-const nickForm = document.querySelector("#nick-form");
+const socket = io(); //백엔드 socket.io 서버를 찾아서 연결해줌.
 
-//소켓 연결될 때 실행
-socket.addEventListener("open", ()=>{
-    console.log("Connected to Server!");
-});
+const welcome = document.getElementById("welcome");
+const form = welcome.querySelector("form");
+const room = document.getElementById("room");
+const msgForm = room.querySelector("form");
 
-//data 전달받았을 때 실행
-socket.addEventListener("message", (message)=>{
-    // console.log("New message : ", message.data);
-    const li = document.createElement("li");
-    li.innerText = message.data;
-    msgList.append(li);
-});
-
-//서버측에서 연결 끊었을 때 실행
-socket.addEventListener("close", ()=>{
-    console.log("Disconnected from the Server");
-});
-
-//소켓 생성 5초 후 메세지 전송
-// setTimeout(()=>{
-//     socket.send("hello, server!");
-// }, 5000);
-
-//메세지타입과 메세지를 함께 보내기 위해 json형태로 만들어 주는 함수
-function makeJSON(type, payload) {
-const data = { type, payload };
-    return JSON.stringify(data); 
-}
+let roomName;
 
 msgForm.addEventListener("submit", (event)=>{
-    event.preventDefault(); //submit 후 화면이 새로 로딩되는 것을 막아줌.
-    const input = msgForm.querySelector("input");
-    socket.send(makeJSON("message", input.value));
-    input.value = "";
+    event.preventDefault();
+    const inputmsg = msgForm.querySelector("input");
+    socket.emit("message", inputmsg.value, roomName, (msg)=>{
+        addMessage(`나 : ${msg}`);
+    });
+    inputmsg.value = "";
 })
 
-nickForm.addEventListener("submit", (event)=>{
+form.addEventListener("submit", (event)=>{
     event.preventDefault();
-    const input = nickForm.querySelector("input");
-    socket.send(makeJSON("nickname", input.value));
-    nickForm.remove(); //닉네임 설정 뒤 닉네임 수정 안되게 닉네임폼 지움.
-    document.querySelector("#nickname").innerText = `${input.value} 님, 반갑습니다.`;
-})
+    const inputnick = document.getElementById("nickname");
+    const inputroom = document.getElementById("roomname");
+    roomName = inputroom.value;
+    socket.emit("enter_room", inputnick.value, roomName, ()=>{
+        welcome.style.display = "none";
+        room.style.display = "";
+        const h3 = room.querySelector("h3");
+        h3.innerText = roomName;
+        inputnick.value = "";
+        inputroom.value = "";
+        addMessage("관리자 : 건전한 채팅문화를 위해 비속어 사용을 자제해주세요.");
+    }); //emit(이벤트명, 데이터(개수에 제약없음), 서버측에 넘겨줄 콜백함수(호출은 서버에서 하지만 실행은 클라이언트에서 됨))
+    //서버측에서 처리 후 서버로부터 파라미터를 넘겨받아서 콜백함 수 실행가능
+});
+
+function addMessage(msg) {
+    const ul = room.querySelector("ul");
+    const li = document.createElement("li");
+    li.innerText = `${msg}`;
+    ul.appendChild(li);
+}
+
+socket.on("welcome-msg", (nickname)=>{addMessage(`${nickname}님이 입장하셨습니다.`)});
+socket.on("bye", (nickname)=>addMessage(`${nickname}님이 퇴장하셨습니다.`));
+socket.on("message", (msg)=>addMessage(msg));

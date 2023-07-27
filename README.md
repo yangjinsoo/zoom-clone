@@ -26,3 +26,23 @@ msgForm.addEventListener("submit", (event)=>{
 ```
 - preventDefault(); 가 submit 후 화면 새로고침하지 않게 해줌
 ***
+### SocketIO
+- 실시간 통신을 가능하게 지원해주는 프레임워크
+- 브라우저가 websocket을 지원한다면 websocket으로 동작하고
+- 지원하지않는다면 HTTP long-pooling으로 동작함.
+```javascript
+const SocketIO = require("socket.io");
+
+...
+
+const server = http.creattSerer(app);
+const io = SocketIO(server);
+```
+- socket.io는 브라우저에서 기본 제공하지않기때문에 프론트쪽에 "/socket.io/socket.io.js"를 import 해줘야 사용가능
+- "/socket.io/socket.io.js"는 socket.io설치하면 제공해줌
+
+- socket.onAny
+    - 어떠한 이벤트에도 모두 실행됨
+
+- room 개념
+    - [Socket.IO](https://socket.io/ "socketio link")
