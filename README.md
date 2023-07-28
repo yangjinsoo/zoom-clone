@@ -44,5 +44,14 @@ const io = SocketIO(server);
 - socket.onAny
     - 어떠한 이벤트에도 모두 실행됨
 
-- room 개념
-    - [Socket.IO](https://socket.io/ "socketio link")
+- [Socket.IO](https://socket.io/ "socketio link")
+- Room 개념
+    - 여러 소켓들이 함께 메세지를 주고받을 수 있는 공간
+
+- Adapter 개념
+    - wsServer.sockets.sids  // 현재 서버에 접속해있는 socket들의 id
+    - wsServer.sockets.rooms    // 현재 서버에 생성되어 있는 room들(소켓별로 생성되는 private도 포함)
+
+- Socket.IO Admin UI
+    - npm i @socket.io/admin-ui 명령어 실행 시 @ 사용으로 에러남.
+    - npm i "@socket.io/admin-ui" 따옴표로 감싸서 해결

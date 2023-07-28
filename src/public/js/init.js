@@ -21,6 +21,7 @@ form.addEventListener("submit", (event)=>{
     const inputnick = document.getElementById("nickname");
     const inputroom = document.getElementById("roomname");
     roomName = inputroom.value;
+
     socket.emit("enter_room", inputnick.value, roomName, ()=>{
         welcome.style.display = "none";
         room.style.display = "";
@@ -40,6 +41,23 @@ function addMessage(msg) {
     ul.appendChild(li);
 }
 
-socket.on("welcome-msg", (nickname)=>{addMessage(`${nickname}님이 입장하셨습니다.`)});
-socket.on("bye", (nickname)=>addMessage(`${nickname}님이 퇴장하셨습니다.`));
+socket.on("welcome-msg", (nickname, usr_cnt)=>{
+    const h3 = room.querySelector("h3");
+    h3.innerText = `${roomName} (${usr_cnt}명)`;
+    addMessage(`${nickname}님이 입장하셨습니다.`);
+});
+socket.on("bye", (nickname, usr_cnt)=>{
+    const h3 = room.querySelector("h3");
+    h3.innerText = `${roomName} (${usr_cnt}명)`;
+    addMessage(`${nickname}님이 퇴장하셨습니다.`)
+});
 socket.on("message", (msg)=>addMessage(msg));
+socket.on("room_change", (roomList)=>{
+    const room_list = document.getElementById("room_list");
+    room_list.innerHTML = "";
+    roomList.forEach((room_info) => {
+        const li = document.createElement("li");
+        li.innerText = `${room_info.room}   (${room_info.usr_cnt}명 참여중)`;
+        room_list.appendChild(li);
+    });
+});
