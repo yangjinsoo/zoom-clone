@@ -55,3 +55,22 @@ const io = SocketIO(server);
 - Socket.IO Admin UI
     - npm i @socket.io/admin-ui 명령어 실행 시 @ 사용으로 에러남.
     - npm i "@socket.io/admin-ui" 따옴표로 감싸서 해결
+    - Admin 페이지 사용하기 위해서 server세팅부분 코드 수정됨.
+    - https://admin.socket.id/  주소로 Admin페이지 접근 가능
+    - [Admin UI 참조](https://socket.io/docs/v4/admin-ui/)
+
+수정 전:
+```javascript
+const SocketIO = require("socket.io");
+...
+const server = http.createServer(app);
+const wsServer = SocketIO(server);
+```
+
+수정 후:
+```javascript
+const {Server} = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
+...
+
+```

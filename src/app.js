@@ -1,6 +1,8 @@
 const express = require("express");
 const http = require("http");
-const SocketIO = require("socket.io");
+const {Server} = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
+
 const app = express();
 app.set('port', process.env.PORT || 3000);
 app.set('view engine', 'pug'); //템플릿 엔진으로 pug사용
@@ -9,9 +11,18 @@ app.use("/public", express.static(__dirname + "/public")); //브라우저에서 
 
 app.get("/", (req, res) => res.render("main"));
 
-const server = http.createServer(app);
-const wsServer = SocketIO(server);
+const httpServer = http.createServer(app);
+const wsServer = new Server(httpServer,{
+    cors: {
+      origin: ["https://admin.socket.io"],
+      credentials: true
+    }
+  });
 
+instrument(wsServer, {
+    auth: false,
+});
+  
 // private room을 제외한 room을 리턴
 function getPublicRooms() {
     const rooms = wsServer.sockets.adapter.rooms;
@@ -30,7 +41,7 @@ function getPublicRooms() {
 }
 
 function getUserCnt(room) {
-    return wsServer.sockets.adapter.rooms.get(room).size;
+    return wsServer.sockets?.adapter?.rooms?.get(room)?.size || null;
 }
 
 wsServer.on("connection", async (socket)=>{
@@ -48,8 +59,16 @@ wsServer.on("connection", async (socket)=>{
     });//클라이언트 측 emit의 인자를 받음
     //done 으로 넘겨받아서 실행하면 함수자체는 클라이언트측에서 실행됨
 
+    socket.on("leave_room", async (roomname, done)=>{
+        socket.leave(roomname);
+        console.log(`현재 ${roomname} 접속자 수 : ${(await wsServer.in(roomname).fetchSockets()).length}`);
+        socket.to(roomname).emit("bye", socket.nickname, getUserCnt(roomname));
+        wsServer.sockets.emit("room_change", getPublicRooms());
+        done();
+    })
+
     socket.on("message", (msg, roomName, done)=>{
-        socket.to(roomName).emit("message", `${socket.nickname} : ${msg}`);
+        socket.to(roomName).emit("message", socket.nickname, msg);
         done(msg);
     });
 
@@ -69,6 +88,6 @@ wsServer.on("connection", async (socket)=>{
     })
 });
 
-server.listen(app.get('port'), () => {
+httpServer.listen(app.get('port'), () => {
     console.log(`Listening on http://localhost:${app.get('port')}`);
 });
